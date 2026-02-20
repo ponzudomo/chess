@@ -1,6 +1,6 @@
 # 開発ロードマップ (Roadmap)
 
-> 最終更新: 2026-02-20
+> 最終更新: 2026-02-20（feature/redo マージ）
 
 ## 🟢 Phase 1: MVP (Minimum Viable Product)
 基本機能と可視化ロジックの実装完了を目指す。
@@ -25,7 +25,7 @@
     - [x] `lib/chess-analyzer.ts` に `analyzePiece()` 関数を追加
 - [x] **UI Refine**:
     - [x] サイドパネル（GameInfo + GameControls）の実装
-    - [x] リセット・Undo・Flip ボタン
+    - [x] リセット・Undo・Redo・Flip ボタン（Redo は手がないときグレーアウト）
     - [x] Board Scope / Piece Scope の切り替えボタン
     - [x] レスポンシブ対応（横長: 横並び / 縦長: 縦並び）
     - [x] 盤面サイズをウィンドウサイズに追従させ画面内に収める (`useBoardLayout` フック)
@@ -37,7 +37,7 @@
 
 - [x] **Game Control**:
     - [x] 棋譜（Move History）の表示 UI（SAN記法、自動スクロール）
-    - [ ] Redo 機能
+    - [x] Redo 機能（`redoStack` 管理、新手でクリア、ボタン無効化）
 - [ ] **Sound & Animation**:
     - [ ] 駒音の実装
     - [ ] 移動アニメーションの調整
@@ -54,6 +54,6 @@
 ---
 
 ## 📋 直近のタスク（優先順）
-1. Redo 機能の実装
-2. UI/UX のブラッシュアップ（カラー調整・アイコン改善など）
-3. 駒音の実装
+1. UI/UX のブラッシュアップ（カラー調整・アイコン改善など）
+2. 駒音の実装
+3. Piece Scope の再設計・実装（右クリックまたは専用モード切り替え）
