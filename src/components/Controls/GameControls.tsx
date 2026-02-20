@@ -8,10 +8,11 @@ interface GameControlsProps {
   onUndo: () => void;
   onRedo: () => void;
   onFlip: () => void;
+  canUndo: boolean;
   canRedo: boolean;
 }
 
-export default function GameControls({ onReset, onUndo, onRedo, onFlip, canRedo }: GameControlsProps) {
+export default function GameControls({ onReset, onUndo, onRedo, onFlip, canUndo, canRedo }: GameControlsProps) {
   const { vizMode, setVizMode, setFocusedSquare } = useGameStore();
 
   // Board Scope トグル: none ↔ board
@@ -59,7 +60,13 @@ export default function GameControls({ onReset, onUndo, onRedo, onFlip, canRedo 
 
           <button
             onClick={onUndo}
-            className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm transition-colors"
+            disabled={!canUndo}
+            title={canUndo ? '1手戻す' : 'Undo できる手がありません'}
+            className={`flex items-center justify-center gap-2 px-3 py-2 rounded text-sm transition-colors ${
+              canUndo
+                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+                : 'bg-gray-800 text-gray-600 cursor-not-allowed'
+            }`}
           >
             <RotateCcw size={16} />
             Undo

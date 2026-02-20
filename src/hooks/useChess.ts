@@ -19,6 +19,7 @@ export const useChess = () => {
     fen,
     setFen,
     setTurn,
+    history,
     setHistory,
     setCaptured,
     setStatus,
@@ -206,6 +207,7 @@ export const useChess = () => {
     resetGame,
     undo,
     redo,
+    canUndo: history.length > 0,
     canRedo: redoStack.length > 0,
     chess: chessRef.current,
   };
