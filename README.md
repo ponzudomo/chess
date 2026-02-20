@@ -33,7 +33,8 @@ docs/
 │   └── [color_palette.md](docs/design/color_palette.md)   # 配色 (青・赤・紫の定義など)
 ├── specs/                 # 機能仕様詳細
 │   ├── [visualization.md](docs/specs/visualization.md)   # 可視化ロジック (攻撃範囲計算のアルゴリズム)
-│   └── [game_modes.md](docs/specs/game_modes.md)      # 各モードの挙動詳細
+│   ├── [game_modes.md](docs/specs/game_modes.md)      # 各モードの挙動詳細
+│   └── [gameplay_mechanics.md](docs/specs/gameplay_mechanics.md) # 対局機能・駒の挙動詳細
 └── [roadmap.md](docs/roadmap.md)             # 詳細な開発ロードマップ、タスク一覧
 \`\`\`
 
