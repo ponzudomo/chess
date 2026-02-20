@@ -24,11 +24,12 @@ export default function Home() {
       </header>
 
       {/* Game Content */}
-      <div className="flex flex-col md:flex-row gap-8 w-full max-w-5xl flex-1">
+      <div className="flex flex-col md:flex-row gap-8 w-full max-w-5xl flex-1 items-center md:items-start justify-center">
         
         {/* Left Column: Board */}
-        <div className="flex-1 flex justify-center items-start">
-          <div className="w-full max-w-[600px] aspect-square shadow-2xl rounded-lg overflow-hidden border-4 border-gray-700">
+        <div className="flex justify-center items-center w-full md:w-auto">
+          {/* Constrain size with vh for vertical fit as well */}
+          <div className="w-[85vw] h-[85vw] md:w-[70vh] md:h-[70vh] max-w-[600px] max-h-[600px] shadow-2xl rounded-lg overflow-hidden border-4 border-gray-700">
              <div className="w-full h-full">
                 <ChessBoard 
                   onPieceDrop={onDrop} 

@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { Square } from 'chess.js';
 import { useGameStore } from '@/store/game';
-import { analyzeBoard, SquareStatus } from '@/lib/chess-analyzer';
+import { analyzeBoard } from '@/lib/chess-analyzer';
 
 interface ChessBoardProps {
   onPieceDrop: (sourceSquare: Square, targetSquare: Square) => boolean;
@@ -17,42 +17,45 @@ export default function ChessBoard({ onPieceDrop, boardOrientation = 'white' }: 
   const customSquareStyles = useMemo(() => {
     const styles: Record<string, React.CSSProperties> = {};
     
+    // Debug log
+    if (vizMode) {
+      console.log("[VizChess] Current Mode:", vizMode);
+    }
+
     if (vizMode === 'board') {
       const { status } = analyzeBoard(fen);
+      console.log("[VizChess] Analysis Status:", status);
       
-      // Analyze board returns status for each square
       Object.entries(status).forEach(([sq, st]) => {
         let backgroundColor = '';
-        
+
+        // Slightly more opaque colors for better visibility
         switch (st) {
           case 'white-control':
-            backgroundColor = 'rgba(59, 130, 246, 0.5)'; // Blue 500
+            backgroundColor = 'rgba(59, 130, 246, 0.6)'; // Blue
             break;
           case 'black-control':
-            backgroundColor = 'rgba(239, 68, 68, 0.5)'; // Red 500
+            backgroundColor = 'rgba(239, 68, 68, 0.6)'; // Red
             break;
           case 'contested':
-            backgroundColor = 'rgba(168, 85, 247, 0.6)'; // Purple 500
+            backgroundColor = 'rgba(168, 85, 247, 0.6)'; // Purple
             break;
           default:
             return;
         }
 
         styles[sq] = {
-            backgroundColor,
-             // Optional: Add a border or something else
+            backgroundColor: backgroundColor,
+            boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.4)', // Helper to see highlight boundaries
         };
       });
     }
-
-    // Piece Scope logic would go here (requires selected piece state)
-    // For now implementing Board Scope only.
 
     return styles;
   }, [fen, vizMode]);
 
   return (
-    <div className="w-full max-w-[600px] aspect-square">
+    <div className="w-full h-full">
       <Chessboard 
         position={fen} 
         onPieceDrop={onPieceDrop}
@@ -60,6 +63,7 @@ export default function ChessBoard({ onPieceDrop, boardOrientation = 'white' }: 
         boardOrientation={boardOrientation}
         customDarkSquareStyle={{ backgroundColor: '#769656' }}
         customLightSquareStyle={{ backgroundColor: '#eeeed2' }}
+        animationDuration={200}
       />
     </div>
   );

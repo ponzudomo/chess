@@ -26,6 +26,7 @@ function getFileIndex(square: Square): number {
 }
 
 function getRankIndex(square: Square): number {
+  // Rank '1' is index 0. Rank '8' is index 7.
   return parseInt(square[1]) - 1;
 }
 
@@ -54,6 +55,7 @@ function computePieceAttacks(chess: Chess, square: Square, piece: Piece, attacks
 
             // If we hit a piece, we stop (ray is blocked)
             // But we include that square as "attacked" (defended or threatened)
+            // Note: chess.get(sq) returns Piece or null
             if (chess.get(target)) break;
 
             cf += df;
@@ -64,9 +66,9 @@ function computePieceAttacks(chess: Chess, square: Square, piece: Piece, attacks
 
   switch (piece.type) {
     case 'p':
-      // White pawn attacks (f-1, r+1), (f+1, r+1) based on rank index increasing
-      // Standard chess.js: rank 1 is index 0. rank 8 is index 7.
+      // Pawn attacks are diagonal forward
       // White moves +1 rank index. Black moves -1 rank index.
+      // e.g. White on e2 (f=4, r=1) attacks d3 (f=3, r=2) and f3 (f=5, r=2).
       const dir = piece.color === 'w' ? 1 : -1;
       add(f - 1, r + dir);
       add(f + 1, r + dir);
@@ -108,8 +110,7 @@ function computePieceAttacks(chess: Chess, square: Square, piece: Piece, attacks
 function getAttackedSquares(chess: Chess, color: Color): Set<Square> {
   const attacks = new Set<Square>();
 
-  // Use ALL_SQUARES to iterate and check pieces
-  // This is safe and agnostic of internal board representation
+  // Iterate simplified, standard loop
   for (const sq of ALL_SQUARES) {
     const piece = chess.get(sq);
     if (piece && piece.color === color) {
@@ -120,26 +121,31 @@ function getAttackedSquares(chess: Chess, color: Color): Set<Square> {
 }
 
 export function analyzeBoard(fen: string): VisualizeData {
-  const chess = new Chess(fen);
-  
-  const whiteAttacks = getAttackedSquares(chess, 'w');
-  const blackAttacks = getAttackedSquares(chess, 'b');
-
-  const status: Partial<Record<Square, SquareStatus>> = {};
-
-  for (const sq of ALL_SQUARES) {
-    const w = whiteAttacks.has(sq);
-    const b = blackAttacks.has(sq);
-
-    let s: SquareStatus = 'none';
-    if (w && b) s = 'contested';
-    else if (w) s = 'white-control';
-    else if (b) s = 'black-control';
+  try {
+    const chess = new Chess(fen);
     
-    if (s !== 'none') {
-        status[sq] = s;
-    }
-  }
+    const whiteAttacks = getAttackedSquares(chess, 'w');
+    const blackAttacks = getAttackedSquares(chess, 'b');
 
-  return { status };
+    const status: Partial<Record<Square, SquareStatus>> = {};
+
+    for (const sq of ALL_SQUARES) {
+      const w = whiteAttacks.has(sq);
+      const b = blackAttacks.has(sq);
+
+      let s: SquareStatus = 'none';
+      if (w && b) s = 'contested';
+      else if (w) s = 'white-control';
+      else if (b) s = 'black-control';
+      
+      if (s !== 'none') {
+          status[sq] = s;
+      }
+    }
+
+    return { status };
+  } catch (e) {
+    console.error("Analysis Failed:", e);
+    return { status: {} };
+  }
 }
