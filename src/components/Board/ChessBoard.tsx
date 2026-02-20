@@ -65,13 +65,11 @@ export default function ChessBoard({
 
       ALL_SQUARES.forEach(sq => {
         if (!highlightedSquares.has(sq)) {
+          // filter: brightness() はマス要素全体（駒の画像を含む子要素）に作用するため、
+          // backgroundImage で背景だけを暗くする方法と違い、駒自体も一緒に暗くなる
           styles[sq] = {
             ...(styles[sq] || {}),
-            // 既存の Board Scope 色の上に黒い半透明レイヤーを重ねる
-            backgroundImage: [
-              styles[sq]?.backgroundImage,
-              'linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45))',
-            ].filter(Boolean).join(', '),
+            filter: 'brightness(0.45)',
           };
         }
       });
