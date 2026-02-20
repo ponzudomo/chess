@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { Square } from 'chess.js';
 import { useGameStore } from '@/store/game';
-import { analyzeBoard, analyzePiece } from '@/lib/chess-analyzer';
+import { analyzeBoard } from '@/lib/chess-analyzer';
 
 interface ChessBoardProps {
   onPieceDrop: (sourceSquare: Square, targetSquare: Square) => boolean;
@@ -21,7 +21,7 @@ export default function ChessBoard({
   selectedSquare,
   legalMoves,
 }: ChessBoardProps) {
-  const { fen, vizMode, focusedSquare } = useGameStore();
+  const { fen, vizMode } = useGameStore();
 
   const customSquareStyles = useMemo(() => {
     const styles: Record<string, React.CSSProperties> = {};
@@ -44,23 +44,7 @@ export default function ChessBoard({
       });
     }
 
-    // ② Piece Scope: 選択した駒の利きを黄色でハイライト
-    if (vizMode === 'piece' && focusedSquare) {
-      const attackedSquares = analyzePiece(fen, focusedSquare);
-      attackedSquares.forEach(sq => {
-        styles[sq] = {
-          backgroundColor: 'rgba(234, 179, 8, 0.5)',
-          boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.4)',
-        };
-      });
-      // 選択中の駒自身を強調表示
-      styles[focusedSquare] = {
-        backgroundColor: 'rgba(234, 179, 8, 0.9)',
-        boxShadow: 'inset 0 0 0 3px rgba(255, 255, 255, 0.8)',
-      };
-    }
-
-    // ③ 選択中の駒のマス（クリック&クリック移動用）
+    // ② 選択中の駒のマス（クリック&クリック移動用）
     if (selectedSquare) {
       styles[selectedSquare] = {
         ...(styles[selectedSquare] || {}),
@@ -69,18 +53,18 @@ export default function ChessBoard({
       };
     }
 
-    // ④ 合法手マス: 緑の円（ドット）で表示
+    // ③ 合法手マス: 中央に小さな黒い丸を表示
+    // ⚠️ background ショートハンドは backgroundColor を上書きしてしまうため、
+    //    backgroundImage を使って Board Scope の色と重ねて表示する
     legalMoves.forEach(sq => {
       styles[sq] = {
         ...(styles[sq] || {}),
-        // radial-gradient で中央に小さな黒い丸を描く
-        background: 'radial-gradient(circle, rgba(0,0,0,0.3) 26%, transparent 27%)',
-        boxShadow: 'none',
+        backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.35) 26%, transparent 27%)',
       };
     });
 
     return styles;
-  }, [fen, vizMode, focusedSquare, selectedSquare, legalMoves]);
+  }, [fen, vizMode, selectedSquare, legalMoves]);
 
   return (
     <div className="w-full h-full">

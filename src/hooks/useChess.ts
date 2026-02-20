@@ -18,7 +18,6 @@ export const useChess = () => {
     setHistory,
     setCaptured,
     setStatus,
-    setFocusedSquare,
     resetGame: storeReset,
   } = useGameStore();
 
@@ -105,13 +104,6 @@ export const useChess = () => {
     // ゲームが終了している場合は操作不可
     if (game.isGameOver()) return;
 
-    // Piece Scope: クリックした駒を focusedSquare にセット
-    const currentVizMode = useGameStore.getState().vizMode;
-    if (currentVizMode === 'piece') {
-      const clickedPieceForScope = game.get(square);
-      setFocusedSquare(clickedPieceForScope ? square : null);
-    }
-
     // === クリック&クリック移動のロジック ===
     if (selectedSquare) {
       // 合法手マスをクリック → 移動実行
@@ -146,7 +138,7 @@ export const useChess = () => {
       const moves = game.moves({ square, verbose: true }) as Move[];
       setLegalMoves(moves.map(m => m.to as Square));
     }
-  }, [selectedSquare, legalMoves, makeMove, setFocusedSquare]);
+  }, [selectedSquare, legalMoves, makeMove]);
 
   /** ゲームをリセット */
   const resetGame = useCallback(() => {
