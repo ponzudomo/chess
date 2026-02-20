@@ -65,11 +65,23 @@ export default function ChessBoard({
 
       ALL_SQUARES.forEach(sq => {
         if (!highlightedSquares.has(sq)) {
-          // filter: brightness() はマス要素全体（駒の画像を含む子要素）に作用するため、
-          // backgroundImage で背景だけを暗くする方法と違い、駒自体も一緒に暗くなる
+          const existing = styles[sq] || {};
           styles[sq] = {
-            ...(styles[sq] || {}),
-            filter: 'brightness(0.45)',
+            ...existing,
+            // ─── 背景の暗化 ───────────────────────────────────────────
+            // マス本来の色（緑・ベージュ）は react-chessboard の「外側 div」に
+            // あるため、filter は届かない。
+            // backgroundImage のグラデーションで内側 div を黒く塗りつぶすことで
+            // 外側の色を視覚的に隠す。
+            // Board Scope の backgroundColor（赤・青・紫）はすでに内側 div にある
+            // ので、重ねて暗くする効果も得られる。
+            backgroundImage: [
+              existing.backgroundImage,
+              'linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45))',
+            ].filter(Boolean).join(', '),
+            // ─── 駒の暗化 ─────────────────────────────────────────────
+            // filter は内側 div 配下のすべて（駒の画像を含む）に作用する。
+            filter: 'brightness(0.55)',
           };
         }
       });
