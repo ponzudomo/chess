@@ -1,14 +1,15 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useState } from 'react';
 import { Chess, Square, Move } from 'chess.js';
 import { useGameStore, GameStatus } from '@/store/game';
 
-interface CapturedPieces {
-  w: string[];
-  b: string[];
-}
-
 export const useChess = () => {
   const chessRef = useRef(new Chess());
+
+  // クリック&クリック移動のための状態
+  // selectedSquare: 現在選択している駒のマス (null = 未選択)
+  // legalMoves: 選択中の駒が移動できるマスの一覧
+  const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
+  const [legalMoves, setLegalMoves] = useState<Square[]>([]);
 
   const {
     fen,
@@ -17,10 +18,11 @@ export const useChess = () => {
     setHistory,
     setCaptured,
     setStatus,
+    setFocusedSquare,
+    resetGame: storeReset,
   } = useGameStore();
 
-  // Sync chess instance with store FEN only if they differ significantly
-  // or on mount.
+  // ストアのFENとchess.jsインスタンスを同期する
   useEffect(() => {
     try {
       if (chessRef.current.fen() !== fen) {
@@ -31,6 +33,7 @@ export const useChess = () => {
     }
   }, [fen]);
 
+  /** chess.jsの現在状態をZustandストアに反映する */
   const updateGameState = useCallback(() => {
     const game = chessRef.current;
     
@@ -45,34 +48,27 @@ export const useChess = () => {
     else if (game.isCheck()) status = 'check';
     setStatus(status);
 
-    // Calculate captured pieces
+    // 取った駒の計算
     const history = game.history({ verbose: true }) as Move[];
     const w: string[] = [];
     const b: string[] = [];
-    
     history.forEach(move => {
       if (move.captured) {
         if (move.color === 'w') {
-          w.push(move.captured); // White captured Black's piece
+          w.push(move.captured);
         } else {
-          b.push(move.captured); // Black captured White's piece
+          b.push(move.captured);
         }
       }
     });
     setCaptured({ w, b });
-
   }, [setFen, setTurn, setHistory, setStatus, setCaptured]);
 
-  const onDrop = useCallback((sourceSquare: Square, targetSquare: Square): boolean => {
+  /** 駒を動かす共通処理 */
+  const makeMove = useCallback((from: Square, to: Square): boolean => {
     const game = chessRef.current;
-
     try {
-      const move = game.move({
-        from: sourceSquare,
-        to: targetSquare,
-        promotion: 'q', 
-      });
-
+      const move = game.move({ from, to, promotion: 'q' });
       if (move === null) return false;
       updateGameState();
       return true;
@@ -81,15 +77,100 @@ export const useChess = () => {
     }
   }, [updateGameState]);
 
+  /** ドラッグ&ドロップで駒を動かす (react-chessboard の onPieceDrop 用) */
+  const onDrop = useCallback((sourceSquare: Square, targetSquare: Square): boolean => {
+    const result = makeMove(sourceSquare, targetSquare);
+    if (result) {
+      setSelectedSquare(null);
+      setLegalMoves([]);
+    }
+    return result;
+  }, [makeMove]);
+
+  /**
+   * マスをクリックした時の処理（クリック&クリック移動 + Piece Scope）
+   *
+   * ロジックの流れ:
+   * 1. Piece Scope モードなら、クリックした駒を focusedSquare に設定
+   * 2. 駒が選択済みの場合:
+   *    a. 合法手マスをクリック → 移動実行
+   *    b. 自分の別の駒をクリック → その駒を選択し直す
+   *    c. その他 → 選択解除
+   * 3. 駒が未選択の場合:
+   *    - 自分の駒をクリック → 選択して合法手を計算
+   */
+  const onSquareClick = useCallback((square: Square) => {
+    const game = chessRef.current;
+
+    // ゲームが終了している場合は操作不可
+    if (game.isGameOver()) return;
+
+    // Piece Scope: クリックした駒を focusedSquare にセット
+    const currentVizMode = useGameStore.getState().vizMode;
+    if (currentVizMode === 'piece') {
+      const clickedPieceForScope = game.get(square);
+      setFocusedSquare(clickedPieceForScope ? square : null);
+    }
+
+    // === クリック&クリック移動のロジック ===
+    if (selectedSquare) {
+      // 合法手マスをクリック → 移動実行
+      if (legalMoves.includes(square)) {
+        const moved = makeMove(selectedSquare, square);
+        if (moved) {
+          setSelectedSquare(null);
+          setLegalMoves([]);
+          return;
+        }
+      }
+
+      // 自分の別の駒をクリック → 選択し直す
+      const clickedPiece = game.get(square);
+      if (clickedPiece && clickedPiece.color === game.turn()) {
+        setSelectedSquare(square);
+        const moves = game.moves({ square, verbose: true }) as Move[];
+        setLegalMoves(moves.map(m => m.to as Square));
+        return;
+      }
+
+      // その他（空マスや相手駒で移動不可）→ 選択解除
+      setSelectedSquare(null);
+      setLegalMoves([]);
+      return;
+    }
+
+    // 駒が未選択 → 自分の駒をクリックで選択
+    const piece = game.get(square);
+    if (piece && piece.color === game.turn()) {
+      setSelectedSquare(square);
+      const moves = game.moves({ square, verbose: true }) as Move[];
+      setLegalMoves(moves.map(m => m.to as Square));
+    }
+  }, [selectedSquare, legalMoves, makeMove, setFocusedSquare]);
+
+  /** ゲームをリセット */
   const resetGame = useCallback(() => {
     chessRef.current.reset();
-    updateGameState();
-  }, [updateGameState]);
+    setSelectedSquare(null);
+    setLegalMoves([]);
+    storeReset(); // vizMode・focusedSquare も含めてストア全体をリセット
+  }, [storeReset]);
 
+  /** 一手戻す (Undo) */
   const undo = useCallback(() => {
     chessRef.current.undo();
+    setSelectedSquare(null);
+    setLegalMoves([]);
     updateGameState();
   }, [updateGameState]);
 
-  return { onDrop, resetGame, undo, chess: chessRef.current };
+  return {
+    onDrop,
+    onSquareClick,
+    selectedSquare,
+    legalMoves,
+    resetGame,
+    undo,
+    chess: chessRef.current,
+  };
 };

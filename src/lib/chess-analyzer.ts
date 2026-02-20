@@ -120,6 +120,27 @@ function getAttackedSquares(chess: Chess, color: Color): Set<Square> {
   return attacks;
 }
 
+/**
+ * 特定の駒が攻撃しているマス一覧を返す（Piece Scope 用）
+ * @param fen 現在の盤面FEN
+ * @param square 対象の駒が置かれているマス
+ * @returns その駒が攻撃しているマスの配列
+ */
+export function analyzePiece(fen: string, square: Square): Square[] {
+  try {
+    const chess = new Chess(fen);
+    const piece = chess.get(square);
+    if (!piece) return [];
+
+    const attacks = new Set<Square>();
+    computePieceAttacks(chess, square, piece, attacks);
+    return Array.from(attacks);
+  } catch (e) {
+    console.error("Piece analysis failed:", e);
+    return [];
+  }
+}
+
 export function analyzeBoard(fen: string): VisualizeData {
   try {
     const chess = new Chess(fen);
