@@ -106,6 +106,13 @@ export const useChess = () => {
 
     // === クリック&クリック移動のロジック ===
     if (selectedSquare) {
+      // 選択中の駒を再度クリック → 選択解除
+      if (square === selectedSquare) {
+        setSelectedSquare(null);
+        setLegalMoves([]);
+        return;
+      }
+
       // 合法手マスをクリック → 移動実行
       if (legalMoves.includes(square)) {
         const moved = makeMove(selectedSquare, square);
