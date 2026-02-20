@@ -1,7 +1,7 @@
 "use client";
 
 import { useGameStore } from '@/store/game';
-import { Eye, RotateCcw, RotateCw, RefreshCw, ArrowLeftRight } from 'lucide-react';
+import { RotateCcw, RotateCw, RefreshCw, ArrowLeftRight } from 'lucide-react';
 
 interface GameControlsProps {
   onReset: () => void;
@@ -10,15 +10,16 @@ interface GameControlsProps {
   onFlip: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  boardOrientation: 'white' | 'black';
 }
 
-export default function GameControls({ onReset, onUndo, onRedo, onFlip, canUndo, canRedo }: GameControlsProps) {
-  const { vizMode, setVizMode, setFocusedSquare } = useGameStore();
+export default function GameControls({ onReset, onUndo, onRedo, onFlip, canUndo, canRedo, boardOrientation }: GameControlsProps) {
+  const { boardScopeWhite, boardScopeBlack, setBoardScopeWhite, setBoardScopeBlack } = useGameStore();
 
-  // Board Scope トグル: none ↔ board
-  const toggleBoardScope = () => {
-    setVizMode(vizMode === 'board' ? 'none' : 'board');
-  };
+  // 手前(bottom)プレイヤー → 青、奥(top)プレイヤー → 赤
+  const whiteIsBottom = boardOrientation === 'white';
+  const whiteActiveClass = whiteIsBottom ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700';
+  const blackActiveClass = whiteIsBottom ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700';
 
   return (
     <div className="flex flex-col gap-3 p-4 bg-gray-800 rounded-lg text-white">
@@ -27,23 +28,30 @@ export default function GameControls({ onReset, onUndo, onRedo, onFlip, canUndo,
       {/* 可視化モードボタン */}
       <div className="flex flex-col gap-2">
         <p className="text-xs text-gray-400 uppercase tracking-wide">Visualization</p>
-        <button
-          onClick={toggleBoardScope}
-          title="盤面全体の攻撃範囲を表示"
-          className={`flex items-center justify-center gap-2 px-3 py-2 rounded text-sm transition-colors ${
-            vizMode === 'board'
-              ? 'bg-blue-600 hover:bg-blue-700 text-white'
-              : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
-          }`}
-        >
-          <Eye size={16} />
-          {vizMode === 'board' ? 'Board Scope ON' : 'Board Scope OFF'}
-        </button>
-        {vizMode === 'board' && (
-          <p className="text-xs text-blue-300">
-            💡 盤面全体の支配範囲を青・赤・紫で表示中
-          </p>
-        )}
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => setBoardScopeWhite(!boardScopeWhite)}
+            title={`白の支配範囲を${boardScopeWhite ? '非表示' : '表示'}`}
+            className={`flex items-center justify-center gap-2 px-3 py-2 rounded text-sm transition-colors ${
+              boardScopeWhite ? whiteActiveClass : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+            }`}
+          >
+            ♙ White
+          </button>
+          <button
+            onClick={() => setBoardScopeBlack(!boardScopeBlack)}
+            title={`黒の支配範囲を${boardScopeBlack ? '非表示' : '表示'}`}
+            className={`flex items-center justify-center gap-2 px-3 py-2 rounded text-sm transition-colors ${
+              boardScopeBlack ? blackActiveClass : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+            }`}
+          >
+            ♟ Black
+          </button>
+        </div>
+        <p className="text-xs text-gray-400">
+          青 = {whiteIsBottom ? '白' : '黒'}の支配　赤 = {whiteIsBottom ? '黒' : '白'}の支配
+          {boardScopeWhite && boardScopeBlack && '　紫 = 争奪'}
+        </p>
       </div>
 
       {/* ゲームコントロールボタン */}

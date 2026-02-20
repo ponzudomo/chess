@@ -1,6 +1,6 @@
 # 開発ロードマップ (Roadmap)
 
-> 最終更新: 2026-02-20（feature/redo マージ）
+> 最終更新: 2026-02-20（feature/board-scope-controls マージ）
 
 ## 🟢 Phase 1: MVP (Minimum Viable Product)
 基本機能と可視化ロジックの実装完了を目指す。
@@ -25,7 +25,8 @@
     - [x] `lib/chess-analyzer.ts` に `analyzePiece()` 関数を追加
 - [x] **UI Refine**:
     - [x] サイドパネル（GameInfo + GameControls）の実装
-    - [x] リセット・Undo・Redo・Flip ボタン（Redo は手がないときグレーアウト）
+    - [x] リセット・Undo・Redo・Flip ボタン（Redo/Undo は手がないときグレーアウト）
+    - [x] Board Scope を白・黒ごとに ON/OFF（向き連動カラー: 手前=青・奥=赤、両方ON時のみ紫）
     - [x] Board Scope / Piece Scope の切り替えボタン
     - [x] レスポンシブ対応（横長: 横並び / 縦長: 縦並び）
     - [x] 盤面サイズをウィンドウサイズに追従させ画面内に収める (`useBoardLayout` フック)
@@ -54,7 +55,7 @@
 ---
 
 ## 📋 直近のタスク（優先順）
-1. ~~nit: 対局開始時にUndoボタンを無効化、色も灰色にしておく → 操作が一回以上行われている状態でのみ有効化~~ ✅
+1. Board Scopeのオンオフのボタンをスライドボタンにして状態をわかりやすく
 2. UI/UX のブラッシュアップ（カラー調整・アイコン改善など）
 3. 駒音の実装
 4. Piece Scope の再設計・実装（右クリックまたは専用モード切り替え）

@@ -12,6 +12,9 @@ interface GameState {
   status: GameStatus;
   vizMode: VizMode;
   focusedSquare: Square | null;
+  // Board Scope の白・黒それぞれの表示フラグ（デフォルト: 両方 ON）
+  boardScopeWhite: boolean;
+  boardScopeBlack: boolean;
 
   // Actions
   setFen: (fen: string) => void;
@@ -21,6 +24,8 @@ interface GameState {
   setStatus: (status: GameStatus) => void;
   setVizMode: (mode: VizMode) => void;
   setFocusedSquare: (square: Square | null) => void;
+  setBoardScopeWhite: (v: boolean) => void;
+  setBoardScopeBlack: (v: boolean) => void;
   resetGame: () => void;
 }
 
@@ -34,6 +39,8 @@ export const useGameStore = create<GameState>((set) => ({
   status: 'active',
   vizMode: 'none',
   focusedSquare: null,
+  boardScopeWhite: true,
+  boardScopeBlack: true,
 
   setFen: (fen) => set({ fen }),
   setTurn: (turn) => set({ turn }),
@@ -42,6 +49,9 @@ export const useGameStore = create<GameState>((set) => ({
   setStatus: (status) => set({ status }),
   setVizMode: (vizMode) => set({ vizMode }),
   setFocusedSquare: (focusedSquare) => set({ focusedSquare }),
+  setBoardScopeWhite: (boardScopeWhite) => set({ boardScopeWhite }),
+  setBoardScopeBlack: (boardScopeBlack) => set({ boardScopeBlack }),
+  // boardScopeWhite/Black はユーザーの表示設定なのでリセット対象外
   resetGame: () => set({
     fen: INITIAL_FEN,
     turn: 'w',

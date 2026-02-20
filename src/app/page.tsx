@@ -122,6 +122,7 @@ export default function Home() {
             onFlip={() => setFlip(!flip)}
             canUndo={canUndo}
             canRedo={canRedo}
+            boardOrientation={flip ? 'black' : 'white'}
           />
           <div className="bg-gray-800 p-3 rounded-lg text-sm text-gray-400">
             <h3 className="text-white font-bold mb-2">How to Play</h3>
