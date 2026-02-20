@@ -1,3 +1,8 @@
+# このリポジトリについて
+
+作りたいものがあったので、とりあえず試作
+ドキュメント含めまだほぼAIが書いてます
+
 # VizChess（仮）
 
 チェス初心者向けの学習・対戦サポートWebアプリケーション。
@@ -5,10 +10,13 @@
 
 ## 目次
 
+- [このリポジトリについて](#このリポジトリについて)
 - [VizChess（仮）](#vizchess仮)
   - [目次](#目次)
   - [コンセプト](#コンセプト)
   - [リポジトリ構造](#リポジトリ構造)
+    - [`docs/` — 設計・仕様ドキュメント](#docs--設計仕様ドキュメント)
+    - [`src/` — アプリケーションソースコード](#src--アプリケーションソースコード)
   - [主な機能 (Core Features)](#主な機能-core-features)
     - [1. ガイド付きチェス対局](#1-ガイド付きチェス対局)
       - [① 全体攻撃範囲の可視化モード (Board Scope)](#-全体攻撃範囲の可視化モード-board-scope)
@@ -21,22 +29,45 @@
 **初心者が「どこに動かしていいか」「どこが危ないか」を一目で判断できるようにし、盤面感覚を養う。**
 
 ## リポジトリ構造
-プロジェクトの詳細な仕様や設計は \`docs/\` ディレクトリ配下にまとめています。
 
-\`\`\`
+### `docs/` — 設計・仕様ドキュメント
+```
 docs/
-├── architecture/          # 設計・技術選定
-│   ├── [tech_stack.md](docs/architecture/tech_stack.md)      # 技術スタックの選定理由 (Next.js, chess.js, etc.)
-│   └── [data_flow.md](docs/architecture/data_flow.md)       # データフローと状態管理 (React state vs chess.js)
-├── design/                # UI/UXデザイン
-│   ├── [ui_mockup.md](docs/design/ui_mockup.md)       # 画面レイアウト、コンポーネント構成案
-│   └── [color_palette.md](docs/design/color_palette.md)   # 配色 (青・赤・紫の定義など)
-├── specs/                 # 機能仕様詳細
-│   ├── [visualization.md](docs/specs/visualization.md)   # 可視化ロジック (攻撃範囲計算のアルゴリズム)
-│   ├── [game_modes.md](docs/specs/game_modes.md)      # 各モードの挙動詳細
-│   └── [gameplay_mechanics.md](docs/specs/gameplay_mechanics.md) # 対局機能・駒の挙動詳細
-└── [roadmap.md](docs/roadmap.md)             # 詳細な開発ロードマップ、タスク一覧
-\`\`\`
+├── architecture/
+│   ├── tech_stack.md        # 技術スタックの選定理由 (Next.js, chess.js, etc.)
+│   └── data_flow.md         # データフローと状態管理
+├── design/
+│   ├── ui_mockup.md         # 画面レイアウト・コンポーネント構成案
+│   └── color_palette.md     # 配色定義 (青・赤・紫)
+├── specs/
+│   ├── visualization.md     # 可視化ロジック (攻撃範囲計算アルゴリズム)
+│   ├── game_modes.md        # 各モードの挙動詳細
+│   └── gameplay_mechanics.md # 対局機能・駒の挙動詳細
+├── git_workflow.md          # ブランチ運用・コミットメッセージのルール
+└── roadmap.md               # 開発ロードマップ・タスク一覧
+```
+
+### `src/` — アプリケーションソースコード
+```
+src/
+├── app/
+│   ├── globals.css          # グローバルスタイル
+│   ├── layout.tsx           # ルートレイアウト
+│   └── page.tsx             # トップページ（レイアウト・useBoardLayout フック）
+├── components/
+│   ├── Board/
+│   │   └── ChessBoard.tsx   # チェス盤コンポーネント（マス色のオーバーレイ描画）
+│   ├── Controls/
+│   │   └── GameControls.tsx # 操作ボタン群（Board Scope / Flip / Undo / Reset）
+│   └── UI/
+│       └── GameInfo.tsx     # ゲーム情報パネル（手番・取った駒・棋譜）
+├── hooks/
+│   └── useChess.ts          # チェスロジックのカスタムフック（移動・選択・状態同期）
+├── lib/
+│   └── chess-analyzer.ts    # 攻撃範囲計算ロジック (analyzeBoard / analyzePiece)
+└── store/
+    └── game.ts              # Zustand によるグローバル状態管理
+```
 
 ## 主な機能 (Core Features)
 
