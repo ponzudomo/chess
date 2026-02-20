@@ -53,19 +53,26 @@ main
 ```bash
 # 1. main を最新にしてから作業ブランチを作る
 git checkout main
-git pull
+git pull origin main
 git checkout -b feature/xxx
 
 # 2. 実装しながらこまめにコミット
 git add .
 git commit -m "feat: ○○を実装した"
 
-# 3. 完成したら main にマージ
+# 3. ブランチをリモートに push する（レビュー・バックアップ用）
+git push origin feature/xxx
+
+# 4. 完成したら main にマージ
 git checkout main
 git merge feature/xxx
 
-# 4. 不要になったブランチを削除
+# 5. マージ後の main をリモートに push する
+git push origin main
+
+# 6. 不要になったブランチを削除（ローカル & リモート）
 git branch -d feature/xxx
+git push origin --delete feature/xxx
 ```
 
 ---
