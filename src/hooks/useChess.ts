@@ -11,6 +11,10 @@ export const useChess = () => {
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
   const [legalMoves, setLegalMoves] = useState<Square[]>([]);
 
+  // Redo のための状態
+  // redoStack: undo した手を積んでおくスタック (新しい手を指すとクリア)
+  const [redoStack, setRedoStack] = useState<Move[]>([]);
+
   const {
     fen,
     setFen,
@@ -69,6 +73,8 @@ export const useChess = () => {
     try {
       const move = game.move({ from, to, promotion: 'q' });
       if (move === null) return false;
+      // 新しい手を指したので、Redo できる手はなくなる
+      setRedoStack([]);
       updateGameState();
       return true;
     } catch (e) {
@@ -152,16 +158,45 @@ export const useChess = () => {
     chessRef.current.reset();
     setSelectedSquare(null);
     setLegalMoves([]);
+    setRedoStack([]);
     storeReset(); // vizMode・focusedSquare も含めてストア全体をリセット
   }, [storeReset]);
 
   /** 一手戻す (Undo) */
   const undo = useCallback(() => {
-    chessRef.current.undo();
+    const undoneMove = chessRef.current.undo();
+    // undo した手を redoStack に積んでおく (redo で再実行できるように)
+    if (undoneMove) {
+      setRedoStack(prev => [...prev, undoneMove]);
+    }
     setSelectedSquare(null);
     setLegalMoves([]);
     updateGameState();
   }, [updateGameState]);
+
+  /** 一手進める (Redo) */
+  const redo = useCallback(() => {
+    if (redoStack.length === 0) return;
+    // スタックの末尾 (最後に undo した手) を取り出す
+    const moveToRedo = redoStack[redoStack.length - 1];
+    const game = chessRef.current;
+    try {
+      const result = game.move({
+        from: moveToRedo.from,
+        to: moveToRedo.to,
+        promotion: moveToRedo.promotion ?? 'q',
+      });
+      if (result) {
+        setRedoStack(prev => prev.slice(0, -1));
+        setSelectedSquare(null);
+        setLegalMoves([]);
+        updateGameState();
+      }
+    } catch (e) {
+      // redo に失敗した場合はスタックをクリアしてリセット
+      setRedoStack([]);
+    }
+  }, [redoStack, updateGameState]);
 
   return {
     onDrop,
@@ -170,6 +205,8 @@ export const useChess = () => {
     legalMoves,
     resetGame,
     undo,
+    redo,
+    canRedo: redoStack.length > 0,
     chess: chessRef.current,
   };
 };

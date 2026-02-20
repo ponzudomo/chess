@@ -65,7 +65,7 @@ function useBoardLayout() {
 }
 
 export default function Home() {
-  const { onDrop, onSquareClick, selectedSquare, legalMoves, resetGame, undo } = useChess();
+  const { onDrop, onSquareClick, selectedSquare, legalMoves, resetGame, undo, redo, canRedo } = useChess();
   const [flip, setFlip] = useState(false);
   const { boardSize, isDesktop } = useBoardLayout();
 
@@ -118,7 +118,9 @@ export default function Home() {
           <GameControls
             onReset={resetGame}
             onUndo={undo}
+            onRedo={redo}
             onFlip={() => setFlip(!flip)}
+            canRedo={canRedo}
           />
           <div className="bg-gray-800 p-3 rounded-lg text-sm text-gray-400">
             <h3 className="text-white font-bold mb-2">How to Play</h3>

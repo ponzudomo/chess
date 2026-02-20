@@ -1,15 +1,17 @@
 "use client";
 
 import { useGameStore } from '@/store/game';
-import { Eye, RotateCcw, RotateCw, RefreshCw } from 'lucide-react';
+import { Eye, RotateCcw, RotateCw, RefreshCw, ArrowLeftRight } from 'lucide-react';
 
 interface GameControlsProps {
   onReset: () => void;
   onUndo: () => void;
+  onRedo: () => void;
   onFlip: () => void;
+  canRedo: boolean;
 }
 
-export default function GameControls({ onReset, onUndo, onFlip }: GameControlsProps) {
+export default function GameControls({ onReset, onUndo, onRedo, onFlip, canRedo }: GameControlsProps) {
   const { vizMode, setVizMode, setFocusedSquare } = useGameStore();
 
   // Board Scope トグル: none ↔ board
@@ -51,7 +53,7 @@ export default function GameControls({ onReset, onUndo, onFlip }: GameControlsPr
             onClick={onFlip}
             className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm transition-colors"
           >
-            <RotateCw size={16} />
+            <ArrowLeftRight size={16} />
             Flip Board
           </button>
 
@@ -64,11 +66,25 @@ export default function GameControls({ onReset, onUndo, onFlip }: GameControlsPr
           </button>
 
           <button
+            onClick={onRedo}
+            disabled={!canRedo}
+            title={canRedo ? '1手進める' : 'Redo できる手がありません'}
+            className={`flex items-center justify-center gap-2 px-3 py-2 rounded text-sm transition-colors ${
+              canRedo
+                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+                : 'bg-gray-800 text-gray-600 cursor-not-allowed'
+            }`}
+          >
+            <RotateCw size={16} />
+            Redo
+          </button>
+
+          <button
             onClick={onReset}
-            className="col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 rounded text-sm transition-colors"
+            className="flex items-center justify-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 rounded text-sm transition-colors"
           >
             <RefreshCw size={16} />
-            Reset Game
+            Reset
           </button>
         </div>
       </div>
