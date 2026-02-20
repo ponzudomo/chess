@@ -1,10 +1,17 @@
 "use client";
 
 import { useMemo } from 'react';
+import { Chess, Square } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
-import { Square } from 'chess.js';
 import { useGameStore } from '@/store/game';
 import { analyzeBoard } from '@/lib/chess-analyzer';
+
+// 全64マスのリスト（暗くする対象を列挙するために使用）
+const ALL_SQUARES = Array.from({ length: 8 }, (_, r) =>
+  Array.from({ length: 8 }, (_, f) =>
+    String.fromCharCode(97 + f) + (r + 1)
+  )
+).flat() as Square[];
 
 interface ChessBoardProps {
   onPieceDrop: (sourceSquare: Square, targetSquare: Square) => boolean;
@@ -44,22 +51,49 @@ export default function ChessBoard({
       });
     }
 
-    // ② 選択中の駒のマス（クリック&クリック移動用）
+    // ② 駒選択中: 「注目マス以外」を暗くするオーバーレイ
+    //
+    // 仕組み:
+    //   - 選択駒マス・合法手マス = 通常表示（明るい）
+    //   - それ以外の全マス = 半透明の黒で暗くする
+    //
+    // ポイント: React の key を使って全マスに個別スタイルを当てられる
+    //   ので、「暗くしたい＝注目マス以外」を対象に塗る
     if (selectedSquare) {
+      // 注目すべきマスのセット（選択駒 + 移動先候補）
+      const highlightedSquares = new Set<string>([selectedSquare, ...legalMoves]);
+
+      ALL_SQUARES.forEach(sq => {
+        if (!highlightedSquares.has(sq)) {
+          styles[sq] = {
+            ...(styles[sq] || {}),
+            // 既存の Board Scope 色の上に黒い半透明レイヤーを重ねる
+            backgroundImage: [
+              styles[sq]?.backgroundImage,
+              'linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45))',
+            ].filter(Boolean).join(', '),
+          };
+        }
+      });
+
+      // 選択中の駒マスをゴールドでハイライト
       styles[selectedSquare] = {
         ...(styles[selectedSquare] || {}),
-        backgroundColor: 'rgba(255, 215, 0, 0.65)',
+        backgroundColor: 'rgba(255, 215, 0, 0.75)',
         boxShadow: 'inset 0 0 0 3px rgba(255, 215, 0, 1)',
       };
     }
 
     // ③ 合法手マス: 中央に小さな黒い丸を表示
     // ⚠️ background ショートハンドは backgroundColor を上書きしてしまうため、
-    //    backgroundImage を使って Board Scope の色と重ねて表示する
+    //    backgroundImage を使って Board Scope の色・暗くする色と重ねて表示する
     legalMoves.forEach(sq => {
       styles[sq] = {
         ...(styles[sq] || {}),
-        backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.35) 26%, transparent 27%)',
+        backgroundImage: [
+          'radial-gradient(circle, rgba(0,0,0,0.5) 26%, transparent 27%)',
+          styles[sq]?.backgroundImage,
+        ].filter(Boolean).join(', '),
       };
     });
 
@@ -81,4 +115,3 @@ export default function ChessBoard({
     </div>
   );
 }
-
